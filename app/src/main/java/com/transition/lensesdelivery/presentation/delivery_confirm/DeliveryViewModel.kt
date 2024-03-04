@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.transition.lensesdelivery.domain.repository.QueueRepository
+import com.transition.lensesdelivery.domain.repository.SocketRepository
 import com.transition.lensesdelivery.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -16,7 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DeliveryViewModel @Inject constructor(
-    private val repository: QueueRepository
+    private val repository: QueueRepository,
+    private val socketRepository: SocketRepository
 ) : ViewModel() {
 
     private val _deliveryState = MutableStateFlow(DeliveryState())
@@ -26,6 +28,7 @@ class DeliveryViewModel @Inject constructor(
 
     init {
         getQueue()
+        listenServer()
     }
 
     fun onEvent(event: QueueEvent) {
@@ -58,7 +61,6 @@ class DeliveryViewModel @Inject constructor(
                 .collect { result ->
                     when (result) {
                         is Resource.Success -> {
-//                            Log.i("TEST", result.data.)
                             result.data?.let { listings ->
                                 _deliveryState.update { it.copy(queue = listings) }
                             }
@@ -71,5 +73,26 @@ class DeliveryViewModel @Inject constructor(
                     }
                 }
         }
+    }
+
+    private fun listenServer(){
+        viewModelScope.launch {
+            socketRepository.connect()
+            socketRepository.listenForEvent("message"){ args ->
+                _deliveryState.update { it.copy(message = "${args[0]}") }
+            }
+        }
+    }
+
+    private fun socketDisconnect(){
+        viewModelScope.launch {
+            socketRepository.disconnect()
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        socketDisconnect()
+
     }
 }

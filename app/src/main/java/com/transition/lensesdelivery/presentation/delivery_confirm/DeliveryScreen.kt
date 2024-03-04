@@ -1,6 +1,7 @@
 package com.transition.lensesdelivery.presentation.delivery_confirm
 
 import android.util.Log
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,11 +21,17 @@ fun DeliveryScreen(
         while(true){
             viewModel.onEvent(QueueEvent.Refresh)
             delay(1000L)
-            Log.i(TAG, deliveryState.queue.toString())
+            Log.i(TAG, "${deliveryState.queue}")
         }
     }
+    Column {
+        Text(
+            text="Hello World"
+        )
+        Text(
+            text = deliveryState.message
+        )
+    }
 
-    Text(
-        text="Hello World"
-    )
+
 }

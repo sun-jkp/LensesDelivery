@@ -1,6 +1,7 @@
 package com.transition.lensesdelivery.domain.model
 
 import java.sql.Date
+import java.time.LocalDateTime
 
 data class Queue(
     val QUEUE_ID: Int,
@@ -10,15 +11,15 @@ data class Queue(
     val DESTINATION_POINT_ID: Int,
     val PRODUCT_TYPE_ID: Int? = null,
     val JOB_TYPE_ID: Int,
-//    val CALLER_BY: String? = null,
-//    val CALL_TIME: Date? = null,
-//    val PICKUP_TIME: Date? = null,
-//    val WAIT_PLACE_TIME: Date? = null,
-//    val DELIVER_TIME: Date? = null,
-//    val WAIT_PICK_TIME: Date? = null,
-//    val CHECKING_TIME: Date? = null,
-//    val FINISH_TIME: Date? = null,
-//    val RESULT: Int? = null,
-//    val ERROR_CODE: String? = null,
-//    val REMARK: String? = null
+    val CALLER_BY: String? = null,
+    val CALL_TIME: String? = null,
+    val PICKUP_TIME: String? = null,
+    val WAIT_PLACE_TIME: String? = null,
+    val DELIVER_TIME: String? = null,
+    val WAIT_PICK_TIME: String? = null,
+    val CHECKING_TIME: String? = null,
+    val FINISH_TIME: String? = null,
+    val RESULT: Int? = null,
+    val ERROR_CODE: String? = null,
+    val REMARK: String? = null
 )

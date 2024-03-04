@@ -89,6 +89,13 @@ dependencies {
     implementation("androidx.room:room-runtime:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
+
+    //Socket IO
+    implementation("io.socket:socket.io-client:2.1.0")
+    implementation("io.socket:engine.io-client:2.1.0")
+
+    //Reeman SDK
+    implementation(files("libs/Reeman-ROS-1.0-202304150921.aar"))
 }
 
 kapt {

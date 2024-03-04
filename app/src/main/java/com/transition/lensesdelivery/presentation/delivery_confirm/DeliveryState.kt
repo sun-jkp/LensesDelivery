@@ -8,5 +8,6 @@ data class DeliveryState(
     val isRefreshing: Boolean = false,
     val searchQuery: String = "",
     val isNavigate: Boolean = false,
-    val isPlayMusic: Boolean = false
+    val isPlayMusic: Boolean = false,
+    val message: String = ""
 )

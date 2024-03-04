@@ -4,7 +4,6 @@ import android.net.http.HttpException
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresExtension
-import com.transition.lensesdelivery.data.csv.CSVParser
 import com.transition.lensesdelivery.data.local.QueueDatabase
 import com.transition.lensesdelivery.data.mapper.toQueue
 import com.transition.lensesdelivery.data.mapper.toQueueEntity
@@ -22,7 +21,6 @@ import javax.inject.Singleton
 class QueueRepositoryImpl @Inject constructor(
     private val api: QueueApi,
     private val db: QueueDatabase,
-    private val queueParser: CSVParser<Queue>
 ) : QueueRepository {
 
     private val dao = db.dao
@@ -34,6 +32,7 @@ class QueueRepositoryImpl @Inject constructor(
         return flow {
             emit(Resource.Loading(true))
             val localListings = dao.searchQueue()
+//            Log.i("TEST", "$localListings")
             emit(Resource.Success(
                 data = localListings.map { it.toQueue() }
             ))
@@ -47,8 +46,7 @@ class QueueRepositoryImpl @Inject constructor(
 
             val remoteListings = try {
                 val response = api.getQueues()
-                Log.i("TEST", "$response")
-//                queueParser.parse(response.byteStream())
+//                Log.i("TEST", "$response")
                response
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -61,7 +59,7 @@ class QueueRepositoryImpl @Inject constructor(
             }
 
             remoteListings?.let { listings ->
-                Log.i("TEST", "Insert")
+//                Log.i("TEST", "Insert: $listings")
                 dao.clearQueue()
                 dao.insertQueue(
                     listings.map { it.toQueueEntity() }
@@ -71,6 +69,7 @@ class QueueRepositoryImpl @Inject constructor(
                         data = dao
                             .searchQueue()
                             .map { it.toQueue() })
+//                    Resource.Success(data = listings)
                 )
                 emit(Resource.Loading(false))
             }
