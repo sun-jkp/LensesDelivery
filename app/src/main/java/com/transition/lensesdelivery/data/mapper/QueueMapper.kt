@@ -6,7 +6,9 @@ import com.transition.lensesdelivery.data.local.LocalDateTimeConverter
 import com.transition.lensesdelivery.data.local.QueueEntity
 import com.transition.lensesdelivery.data.remote.Dto.QueueDto
 import com.transition.lensesdelivery.domain.model.Queue
+import com.transition.lensesdelivery.domain.model.QueueDetail
 import java.time.LocalDateTime
+
 private val timeConverter = LocalDateTimeConverter()
 fun QueueEntity.toQueue(): Queue {
     return Queue(
@@ -28,6 +30,138 @@ fun QueueEntity.toQueue(): Queue {
         ERROR_CODE = errorCode,
         REMARK = remark
     )
+}
+
+fun QueueEntity.toQueueDetail(): QueueDetail {
+    return QueueDetail(
+        queueId = queueId,
+        status = statusIdToStr(statusId),
+        pickupPoint = pointIdToStr(pickupPointId),
+        destinationPoint = pointIdToStr(destinationPointId),
+        jobType = jobTypeIdToStr(jobTypeId),
+        productType = productTypeIdToStr(productTypeId)
+    )
+}
+
+fun jobTypeIdToStr(jobTypeId: Int): String {
+    return when (jobTypeId) {
+        1 -> {
+            "Film Thickness"
+        }
+
+        2 -> {
+            "Post cure"
+        }
+
+        3 -> {
+            "Color Change"
+        }
+
+        4 -> {
+            "Returning lenses"
+        }
+
+        else -> {
+            "Unknown"
+        }
+
+    }
+}
+
+fun productTypeIdToStr(productTypeId: Int?): String {
+    return when (productTypeId) {
+        1 -> {
+            "Good"
+        }
+
+        2 -> {
+            "Reject"
+        }
+
+        else -> {
+            "Unknown"
+        }
+    }
+}
+
+fun statusIdToStr(statusId: Int): String {
+    return when (statusId) {
+        0 -> {
+            "Lab"
+        }
+
+        1 -> {
+            "Pick up"
+        }
+
+        2 -> {
+            "Wait Place"
+        }
+
+        3 -> {
+            "Delivery"
+        }
+
+        4 -> {
+            "Wait Pick"
+        }
+
+        5 -> {
+            "checking"
+        }
+
+        6 -> {
+            "success"
+        }
+
+        else -> {
+            "Unknown"
+        }
+    }
+}
+
+fun pointIdToStr(pointId: Int): String {
+    return when (pointId) {
+        0 -> {
+            "Lab"
+        }
+
+        1 -> {
+            "Line 1"
+        }
+
+        2 -> {
+            "Line 2"
+        }
+
+        3 -> {
+            "Line 3"
+        }
+
+        4 -> {
+            "Line 4"
+        }
+
+        5 -> {
+            "Line 5"
+        }
+
+        6 -> {
+            "Line 6"
+        }
+
+        7 -> {
+            "Line 7"
+        }
+
+        8 -> {
+            "Line 8"
+        }
+
+        else -> {
+            "Unknown"
+        }
+    }
 }
 
 fun Queue.toQueueEntity(): QueueEntity {

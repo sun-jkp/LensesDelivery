@@ -36,6 +36,12 @@ class DeliveryViewModel @Inject constructor(
         listenServer()
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        socketDisconnect()
+        stopListen()
+    }
+
     fun onEvent(event: QueueEvent) {
         when (event) {
             is QueueEvent.Refresh -> {
@@ -51,6 +57,23 @@ class DeliveryViewModel @Inject constructor(
                     delay(500L)
                     getQueue()
                 }
+            }
+
+            is QueueEvent.OnConfirm -> {
+//                event.buttonId
+            }
+        }
+    }
+
+    fun onRosEvent(event: RosEvent) {
+        when (event) {
+            is RosEvent.GetHost ->{
+                controller.getHostIp()
+                controller.getHostName()
+            }
+
+            is RosEvent.HeartBeats -> {
+                heartBeats()
             }
         }
     }
@@ -68,7 +91,6 @@ class DeliveryViewModel @Inject constructor(
                                 _deliveryState.update { it.copy(queue = listings) }
                             }
                         }
-
                         is Resource.Error -> Unit
                         is Resource.Loading -> {
                             _deliveryState.update { it.copy(isLoading = result.isLoading) }
@@ -78,6 +100,31 @@ class DeliveryViewModel @Inject constructor(
         }
     }
 
+    override fun onResult(result: String?) {
+        if (result != null) {
+            Log.i(TAG, "$result")
+        }
+    }
+
+    //Ros
+    private fun heartBeats(){
+        controller.heartBeat()
+        Log.i(TAG, "HeartBeat")
+    }
+
+    fun initController(context: Context) {
+        try {
+            controller.init(context, "ros_demo", this)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun stopListen() {
+        controller.stopListen()
+    }
+
+    //Socket IO
     private fun listenServer() {
         viewModelScope.launch {
             socketRepository.connect()
@@ -90,29 +137,6 @@ class DeliveryViewModel @Inject constructor(
     private fun socketDisconnect() {
         viewModelScope.launch {
             socketRepository.disconnect()
-        }
-    }
-
-    fun initController(context: Context) {
-        try {
-            controller.init(context, "ros_demo", this)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    fun stopListen() {
-        controller.stopListen()
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        socketDisconnect()
-    }
-
-    override fun onResult(result: String?) {
-        if (result != null) {
-            Log.i(TAG, "$result")
         }
     }
 }

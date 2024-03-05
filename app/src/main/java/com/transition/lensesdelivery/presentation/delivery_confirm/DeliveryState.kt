@@ -9,5 +9,16 @@ data class DeliveryState(
     val searchQuery: String = "",
     val isNavigate: Boolean = false,
     val isPlayMusic: Boolean = false,
-    val message: String = ""
+    val message: String = "",
+    val buttonState: List<Boolean> = listOf(
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+    )
 )
