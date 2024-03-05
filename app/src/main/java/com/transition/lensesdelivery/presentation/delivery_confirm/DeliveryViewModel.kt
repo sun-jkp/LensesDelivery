@@ -1,8 +1,11 @@
 package com.transition.lensesdelivery.presentation.delivery_confirm
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.reeman.ros.controller.RobotActionController
+import com.reeman.ros.listen.RosCallBackListener
 import com.transition.lensesdelivery.domain.repository.QueueRepository
 import com.transition.lensesdelivery.domain.repository.SocketRepository
 import com.transition.lensesdelivery.util.Resource
@@ -18,13 +21,15 @@ import javax.inject.Inject
 @HiltViewModel
 class DeliveryViewModel @Inject constructor(
     private val repository: QueueRepository,
-    private val socketRepository: SocketRepository
-) : ViewModel() {
+    private val socketRepository: SocketRepository,
+) : ViewModel(), RosCallBackListener {
 
     private val _deliveryState = MutableStateFlow(DeliveryState())
     val deliveryState = _deliveryState.asStateFlow()
 
     private var searchJob: Job? = null
+
+    private val controller: RobotActionController = RobotActionController.getInstance()
 
     init {
         getQueue()
@@ -47,13 +52,11 @@ class DeliveryViewModel @Inject constructor(
                     getQueue()
                 }
             }
-
-            else -> {}
         }
     }
 
     private fun getQueue(
-        fetchFromRemote: Boolean = false
+        fetchFromRemote: Boolean = false,
     ) {
         viewModelScope.launch {
             repository
@@ -75,24 +78,41 @@ class DeliveryViewModel @Inject constructor(
         }
     }
 
-    private fun listenServer(){
+    private fun listenServer() {
         viewModelScope.launch {
             socketRepository.connect()
-            socketRepository.listenForEvent("message"){ args ->
+            socketRepository.listenForEvent("message") { args ->
                 _deliveryState.update { it.copy(message = "${args[0]}") }
             }
         }
     }
 
-    private fun socketDisconnect(){
+    private fun socketDisconnect() {
         viewModelScope.launch {
             socketRepository.disconnect()
         }
     }
 
+    fun initController(context: Context) {
+        try {
+            controller.init(context, "ros_demo", this)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun stopListen() {
+        controller.stopListen()
+    }
+
     override fun onCleared() {
         super.onCleared()
         socketDisconnect()
+    }
 
+    override fun onResult(result: String?) {
+        if (result != null) {
+            Log.i(TAG, "$result")
+        }
     }
 }

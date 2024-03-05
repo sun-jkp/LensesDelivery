@@ -2,11 +2,9 @@ package com.transition.lensesdelivery.di
 
 import android.app.Application
 import androidx.room.Room
-import com.reeman.ros.controller.RobotActionController
 import com.transition.lensesdelivery.data.local.QueueDatabase
 import com.transition.lensesdelivery.data.remote.QueueApi
 import com.transition.lensesdelivery.domain.repository.SocketRepository.Companion.SOCKET_IO_URL
-import com.transition.lensesdelivery.presentation.delivery_confirm.RosController
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,7 +23,6 @@ object AppModule{
     @Provides
     @Singleton
     fun provideQueueApi(): QueueApi{
-//        val gson = GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").create()
         return Retrofit.Builder()
             .baseUrl(QueueApi.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())

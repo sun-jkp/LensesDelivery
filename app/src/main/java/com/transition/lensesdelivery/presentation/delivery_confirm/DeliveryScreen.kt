@@ -21,7 +21,7 @@ fun DeliveryScreen(
         while(true){
             viewModel.onEvent(QueueEvent.Refresh)
             delay(1000L)
-            Log.i(TAG, "${deliveryState.queue}")
+//            Log.i(TAG, "${deliveryState.queue}")
         }
     }
     Column {
