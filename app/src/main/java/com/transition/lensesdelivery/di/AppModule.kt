@@ -18,11 +18,11 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object AppModule{
+object AppModule {
 
     @Provides
     @Singleton
-    fun provideQueueApi(): QueueApi{
+    fun provideQueueApi(): QueueApi {
         return Retrofit.Builder()
             .baseUrl(QueueApi.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
@@ -33,7 +33,7 @@ object AppModule{
 
     @Provides
     @Singleton
-    fun providesQueueDatabase(app: Application): QueueDatabase{
+    fun providesQueueDatabase(app: Application): QueueDatabase {
         return Room.databaseBuilder(
             app,
             QueueDatabase::class.java,

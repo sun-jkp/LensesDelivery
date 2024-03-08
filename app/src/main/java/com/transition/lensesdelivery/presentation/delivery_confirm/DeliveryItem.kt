@@ -3,6 +3,7 @@ package com.transition.lensesdelivery.presentation.delivery_confirm
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -113,6 +114,62 @@ fun BatteryInfo(percentage: Int = 0, isCharging: Boolean = false) {
                 textAlign = TextAlign.Left
             )
         }
+    }
+}
+
+@Composable
+fun RobotStatus(isConnected: Boolean, isRosConnected: Boolean, massage: String) {
+    val serverBackgroundColor = if (isConnected) Color(0xFF1DFC4E) else Color(0xFFFF4832)
+    Row {
+        Card(
+            modifier = Modifier
+                .size(width = 130.dp, height = 35.dp),
+            colors = CardDefaults.cardColors(serverBackgroundColor)
+        ) {
+            Text(
+                text = if (isConnected) "SERVER:ON" else "SERVER:OFF",
+                modifier = Modifier.padding(5.dp),
+                fontFamily = sourceCodeProFontFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Left,
+                maxLines = 1
+            )
+        }
+        Spacer(
+            modifier = Modifier
+                .width(10.dp)
+        )
+        val RobotStatusBackgroundColor =
+            if (isRosConnected) Color(0xFF7ADDFF) else Color(0xFFFF4832)
+        Card(
+            colors = CardDefaults.cardColors(RobotStatusBackgroundColor),
+            modifier = Modifier
+                .height(35.dp)
+        ) {
+            Text(
+                text = "Robot Status:",
+                modifier = Modifier.padding(5.dp),
+                fontFamily = sourceCodeProFontFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Left,
+                maxLines = 1
+            )
+        }
+        Spacer(
+            modifier = Modifier
+                .width(10.dp)
+        )
+        Text(
+            text = massage,
+            modifier = Modifier.padding(5.dp),
+            fontFamily = sourceCodeProFontFamily,
+            fontWeight = FontWeight.Normal,
+            fontSize = 14.sp,
+            textAlign = TextAlign.Left,
+            maxLines = 1
+        )
     }
 }
 
@@ -245,13 +302,15 @@ fun ItemPreview() {
 //    LineButton("Line 0", true){
 //
 //    }
-    val queue = QueueDetail(
-        queueId = 99,
-        status = "Pending",
-        pickupPoint = "Line 5",
-        destinationPoint = "Lab",
-        productType = "Good",
-        jobType = "Film Thickness"
-    )
-    QueueDetailLayout(queue)
+//    val queue = QueueDetail(
+//        queueId = 99,
+//        status = "Pending",
+//        pickupPoint = "Line 5",
+//        destinationPoint = "Lab",
+//        productType = "Good",
+//        jobType = "Film Thickness"
+//    )
+//    QueueDetailLayout(queue)
+
+    RobotStatus(false, true, "Error position")
 }

@@ -2,7 +2,6 @@ package com.transition.lensesdelivery.di
 
 import com.transition.lensesdelivery.data.repository.QueueRepositoryImpl
 import com.transition.lensesdelivery.data.repository.SocketRepositoryImpl
-import com.transition.lensesdelivery.domain.model.Queue
 import com.transition.lensesdelivery.domain.repository.QueueRepository
 import com.transition.lensesdelivery.domain.repository.SocketRepository
 import dagger.Binds

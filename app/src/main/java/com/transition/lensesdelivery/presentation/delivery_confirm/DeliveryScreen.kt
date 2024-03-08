@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -13,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
@@ -25,12 +28,19 @@ fun DeliveryScreen(
 ) {
     val deliveryState by viewModel.deliveryState.collectAsState()
     val context = LocalContext.current
+
     LaunchedEffect(Unit) {
         viewModel.initController(context)
+        delay(200)
+        if(deliveryState.isRosConnected){
+            viewModel.onRosEvent(RosEvent.GetSpecialArea)
+            viewModel.checkQueueInCache()
+        }
+
         while (true) {
-//            viewModel.onEvent(QueueEvent.Refresh)
+//            if(deliveryState.isRosConnected) viewModel.onRosEvent(RosEvent.HeartBeats)
+            Log.d("TEST","${deliveryState.isNavigate}")
             delay(5000L)
-            viewModel.onRosEvent(RosEvent.HeartBeats)
         }
     }
 
@@ -40,11 +50,18 @@ fun DeliveryScreen(
     ) {
         Row(
             modifier = Modifier
-                .align(Alignment.End)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start
         ) {
-            BatteryInfo(99, true)
+            BatteryInfo(deliveryState.coreData.power, deliveryState.coreData.chargingStatus == 2)
+            Spacer(modifier = Modifier.width(10.dp))
+            RobotStatus(
+                isConnected = deliveryState.isConnected,
+                isRosConnected = deliveryState.isRosConnected,
+                massage = deliveryState.robotMsg
+            )
         }
-        QueueDetailLayout(queueDetail = null)
+        QueueDetailLayout(queueDetail = deliveryState.queueDetail)
 
         Spacer(modifier = Modifier.height(5.dp))
 
@@ -96,4 +113,10 @@ fun ButtonLayout(buttonEnable: List<Boolean>, onClick: (buttonId: Int) -> Unit) 
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun Screen() {
+    DeliveryScreen()
 }

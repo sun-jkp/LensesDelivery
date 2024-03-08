@@ -14,7 +14,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-//    private val viewModel: DeliveryViewModel by viewModels<DeliveryViewModel>()
+    //    private val viewModel: DeliveryViewModel by viewModels<DeliveryViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                        DeliveryScreen()
+                    DeliveryScreen()
                 }
             }
         }

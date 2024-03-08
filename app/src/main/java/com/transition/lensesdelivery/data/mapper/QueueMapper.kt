@@ -1,18 +1,16 @@
 package com.transition.lensesdelivery.data.mapper
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.transition.lensesdelivery.data.local.LocalDateTimeConverter
 import com.transition.lensesdelivery.data.local.QueueEntity
 import com.transition.lensesdelivery.data.remote.Dto.QueueDto
 import com.transition.lensesdelivery.domain.model.Queue
 import com.transition.lensesdelivery.domain.model.QueueDetail
-import java.time.LocalDateTime
 
 private val timeConverter = LocalDateTimeConverter()
 fun QueueEntity.toQueue(): Queue {
     return Queue(
         QUEUE_ID = queueId,
+        RS_ID = rsId,
         STATUS_ID = statusId,
         PICKUP_POINT_ID = pickupPointId,
         DESTINATION_POINT_ID = destinationPointId,
@@ -32,14 +30,37 @@ fun QueueEntity.toQueue(): Queue {
     )
 }
 
-fun QueueEntity.toQueueDetail(): QueueDetail {
+fun Queue.toQueueEntity(): QueueEntity {
+    return QueueEntity(
+        queueId = QUEUE_ID,
+        rsId = RS_ID,
+        statusId = STATUS_ID,
+        pickupPointId = PICKUP_POINT_ID,
+        destinationPointId = DESTINATION_POINT_ID,
+        productTypeId = PRODUCT_TYPE_ID,
+        jobTypeId = JOB_TYPE_ID,
+        callerBy = CALLER_BY,
+        callTime = timeConverter.stringToTime(CALL_TIME),
+        pickupTime = timeConverter.stringToTime(PICKUP_TIME),
+        waitPlaceTime = timeConverter.stringToTime(WAIT_PLACE_TIME),
+        deliverTime = timeConverter.stringToTime(DELIVER_TIME),
+        waitPickTime = timeConverter.stringToTime(WAIT_PICK_TIME),
+        checkingTime = timeConverter.stringToTime(CHECKING_TIME),
+        finishTime = timeConverter.stringToTime(FINISH_TIME),
+        result = RESULT,
+        errorCode = ERROR_CODE,
+        remark = REMARK
+    )
+}
+
+fun Queue.toQueueDetail(): QueueDetail {
     return QueueDetail(
-        queueId = queueId,
-        status = statusIdToStr(statusId),
-        pickupPoint = pointIdToStr(pickupPointId),
-        destinationPoint = pointIdToStr(destinationPointId),
-        jobType = jobTypeIdToStr(jobTypeId),
-        productType = productTypeIdToStr(productTypeId)
+        queueId = QUEUE_ID,
+        status = statusIdToStr(STATUS_ID),
+        pickupPoint = pointIdToStr(PICKUP_POINT_ID),
+        destinationPoint = pointIdToStr(DESTINATION_POINT_ID),
+        jobType = jobTypeIdToStr(JOB_TYPE_ID),
+        productType = productTypeIdToStr(PRODUCT_TYPE_ID)
     )
 }
 
@@ -86,32 +107,34 @@ fun productTypeIdToStr(productTypeId: Int?): String {
 
 fun statusIdToStr(statusId: Int): String {
     return when (statusId) {
-        0 -> {
-            "Lab"
-        }
-
         1 -> {
-            "Pick up"
+            "Pending"
         }
 
         2 -> {
-            "Wait Place"
+            "Pick Up"
         }
 
         3 -> {
-            "Delivery"
+            "Wait Place Lenses"
         }
 
         4 -> {
-            "Wait Pick"
+            "Delivery"
         }
 
         5 -> {
-            "checking"
+            "Wait Pick Lenses"
         }
 
         6 -> {
-            "success"
+            "Checking"
+        }
+        7 -> {
+            "Success"
+        }
+        8 -> {
+            "Cancel"
         }
 
         else -> {
@@ -164,20 +187,11 @@ fun pointIdToStr(pointId: Int): String {
     }
 }
 
-fun Queue.toQueueEntity(): QueueEntity {
-    return QueueEntity(
-        queueId = QUEUE_ID,
-        statusId = STATUS_ID,
-        pickupPointId = PICKUP_POINT_ID,
-        destinationPointId = DESTINATION_POINT_ID,
-        productTypeId = PRODUCT_TYPE_ID,
-        jobTypeId = JOB_TYPE_ID
-    )
-}
 
 fun QueueDto.toQueueEntity(): QueueEntity {
     return QueueEntity(
         queueId = QUEUE_ID,
+        rsId = RS_ID,
         statusId = STATUS_ID,
         pickupPointId = PICKUP_POINT_ID,
         destinationPointId = DESTINATION_POINT_ID,
@@ -190,6 +204,32 @@ fun QueueDto.toQueueEntity(): QueueEntity {
         deliverTime = timeConverter.stringToTime(DELIVER_TIME),
         waitPickTime = timeConverter.stringToTime(WAIT_PICK_TIME),
         checkingTime = timeConverter.stringToTime(CHECKING_TIME),
-        finishTime = timeConverter.stringToTime(FINISH_TIME)
+        finishTime = timeConverter.stringToTime(FINISH_TIME),
+        result = RESULT,
+        errorCode = ERROR_CODE,
+        remark = REMARK
+    )
+}
+
+fun QueueDto.toQueue(): Queue {
+    return Queue(
+        QUEUE_ID = QUEUE_ID,
+        RS_ID = RS_ID,
+        STATUS_ID = STATUS_ID,
+        PICKUP_POINT_ID = PICKUP_POINT_ID,
+        DESTINATION_POINT_ID = DESTINATION_POINT_ID,
+        PRODUCT_TYPE_ID = PRODUCT_TYPE_ID,
+        JOB_TYPE_ID = JOB_TYPE_ID,
+        CALLER_BY = CALLER_BY,
+        CALL_TIME = CALL_TIME,
+        PICKUP_TIME = PICKUP_TIME,
+        WAIT_PLACE_TIME = WAIT_PLACE_TIME,
+        DELIVER_TIME = DELIVER_TIME,
+        WAIT_PICK_TIME = WAIT_PICK_TIME,
+        CHECKING_TIME = CHECKING_TIME,
+        FINISH_TIME = FINISH_TIME,
+        RESULT = RESULT,
+        ERROR_CODE = ERROR_CODE,
+        REMARK = REMARK
     )
 }

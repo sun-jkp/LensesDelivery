@@ -1,25 +1,23 @@
 package com.transition.lensesdelivery.data.repository
 
 import com.transition.lensesdelivery.domain.repository.SocketRepository
-import com.transition.lensesdelivery.domain.repository.SocketRepository.Companion.SOCKET_IO_URL
+import io.socket.client.Socket
 import io.socket.emitter.Emitter
+import java.net.URISyntaxException
 import javax.inject.Inject
 import javax.inject.Singleton
-import io.socket.client.IO
-import io.socket.client.Socket
-import java.net.URISyntaxException
 
 @Singleton
-class SocketRepositoryImpl @Inject constructor(private val socket: Socket): SocketRepository {
+class SocketRepositoryImpl @Inject constructor(private val socket: Socket) : SocketRepository {
 
     override fun connect() {
         try {
             socket.connect()
 
-            socket.on(Socket.EVENT_CONNECT){
+            socket.on(Socket.EVENT_CONNECT) {
                 socket.emit("message", "Robot Service join to server.")
             }
-        }catch (e: URISyntaxException){
+        } catch (e: URISyntaxException) {
             e.printStackTrace()
         }
     }

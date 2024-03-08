@@ -18,13 +18,13 @@ data class QueueEntity(
     @ColumnInfo(name = "PRODUCT_TYPE_ID") val productTypeId: Int?,
     @ColumnInfo(name = "JOB_TYPE_ID") val jobTypeId: Int,
     @ColumnInfo(name = "CALLER_BY") val callerBy: String? = null,
-    @ColumnInfo(name = "CALL_TIME")  val callTime: Date? = null,
-    @ColumnInfo(name = "PICKUP_TIME")  val pickupTime: Date? = null,
-    @ColumnInfo(name = "WAIT_PLACE_TIME")  val waitPlaceTime: Date? = null,
-    @ColumnInfo(name = "DELIVER_TIME")  val deliverTime: Date? = null,
-    @ColumnInfo(name = "WAIT_PICK_TIME")  val waitPickTime: Date? = null,
-    @ColumnInfo(name = "CHECKING_TIME")  val checkingTime: Date? = null,
-    @ColumnInfo(name = "FINISH_TIME")  val finishTime: Date? = null,
+    @ColumnInfo(name = "CALL_TIME") val callTime: Date? = null,
+    @ColumnInfo(name = "PICKUP_TIME") val pickupTime: Date? = null,
+    @ColumnInfo(name = "WAIT_PLACE_TIME") val waitPlaceTime: Date? = null,
+    @ColumnInfo(name = "DELIVER_TIME") val deliverTime: Date? = null,
+    @ColumnInfo(name = "WAIT_PICK_TIME") val waitPickTime: Date? = null,
+    @ColumnInfo(name = "CHECKING_TIME") val checkingTime: Date? = null,
+    @ColumnInfo(name = "FINISH_TIME") val finishTime: Date? = null,
     @ColumnInfo(name = "RESULT") val result: Int? = null,
     @ColumnInfo(name = "ERROR_CODE") val errorCode: String? = null,
     @ColumnInfo(name = "REMARK") val remark: String? = null
@@ -37,16 +37,17 @@ data class QueueEntity(
 //@ColumnInfo(name = "WAIT_PICK_TIME")  val waitPickTime: LocalDateTime? = null,
 //@ColumnInfo(name = "CHECKING_TIME")  val checkingTime: LocalDateTime? = null,
 //@ColumnInfo(name = "FINISH_TIME")  val finishTime: LocalDateTime? = null,
-class LocalDateTimeConverter{
+class LocalDateTimeConverter {
     private val DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.sss'Z'"
+
     @TypeConverter
-    fun timeToString(time: Date?) : String? {
+    fun timeToString(time: Date?): String? {
         val dateFormat = SimpleDateFormat(DATE_FORMAT, Locale.getDefault())
         return time?.let { dateFormat.format(it) }
     }
 
     @TypeConverter
-    fun stringToTime(string: String?) : Date? {
+    fun stringToTime(string: String?): Date? {
         val dateFormat = SimpleDateFormat(DATE_FORMAT, Locale.getDefault())
         var parsedDate: Date? = null
         parsedDate = string?.let { dateFormat.parse(it) }

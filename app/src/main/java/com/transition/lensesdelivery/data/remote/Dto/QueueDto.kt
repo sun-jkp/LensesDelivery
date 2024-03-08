@@ -1,7 +1,5 @@
 package com.transition.lensesdelivery.data.remote.Dto
 
-import java.time.LocalDateTime
-
 data class QueueDto(
     val QUEUE_ID: Int,
     val RS_ID: Int? = null,
