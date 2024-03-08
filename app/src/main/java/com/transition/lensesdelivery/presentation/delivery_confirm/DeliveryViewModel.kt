@@ -53,18 +53,19 @@ class DeliveryViewModel @Inject constructor(
 
     private val dao = db.dao
 
-    init {
-//        getQueues(fetchFromRemote = true, rsId = rsId)
-//        listenServer()
-//        initState()
+    init{
+        resetDBAndNavList()
     }
-    private fun resetNavList(){
+    private fun resetDBAndNavList(){
         _deliveryState.update { it.copy(
             navListPoint = NavListState(
                 listPointName = emptyList(),
                 lastIndex = 0
             )
         ) }
+        viewModelScope.launch {
+            dao.clearQueue()
+        }
     }
 
     override fun onCleared() {
@@ -73,10 +74,6 @@ class DeliveryViewModel @Inject constructor(
         stopListen()
         navigateJob?.cancel()
     }
-
-//    fun startBackgroundTask() {
-//        checkQueueInCache()
-//    }
 
     fun pauseBackgroundTask() {
         navigateJob?.cancel()
@@ -314,7 +311,6 @@ class DeliveryViewModel @Inject constructor(
                     }
                 } else {
                     onIdle()
-//                    getQueueToWork()
                     getQueues(fetchFromRemote = true, rsId = rsId)
                 }
                 checkQueueOnServerAndSync()
@@ -460,8 +456,6 @@ class DeliveryViewModel @Inject constructor(
             }
         }else{
             if(_deliveryState.value.coreData.chargingStatus!=2){
-//                if(_deliveryState.value.coreData)
-//                controller?.dockStart()
                 if (shouldSendCmdNav("charging_pile")){
                     controller?.navigationByPoint("charging_pile")
                 }
@@ -832,7 +826,6 @@ class DeliveryViewModel @Inject constructor(
 
             if (result.startsWith("nav_result")) {
                 onNavResult(result)
-//                Log.i(TAG, "$result")
             } else if (result.startsWith("sys:boot")) {
 
             } else if (result.startsWith("core_data")) {
