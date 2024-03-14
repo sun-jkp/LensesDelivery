@@ -38,7 +38,7 @@ data class QueueEntity(
 //@ColumnInfo(name = "CHECKING_TIME")  val checkingTime: LocalDateTime? = null,
 //@ColumnInfo(name = "FINISH_TIME")  val finishTime: LocalDateTime? = null,
 class LocalDateTimeConverter {
-    private val DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.sss'Z'"
+    private val DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.ss'Z'"
 
     @TypeConverter
     fun timeToString(time: Date?): String? {

@@ -38,7 +38,8 @@ const val ROS_TAG = "ROS"
 class DeliveryViewModel @Inject constructor(
     private val repository: QueueRepository,
     private val socketRepository: SocketRepository,
-    private val db: QueueDatabase
+    private val db: QueueDatabase,
+//    val player: Player
 ) : ViewModel(), RosCallBackListener {
 
     private val _deliveryState = MutableStateFlow(DeliveryState())
@@ -53,16 +54,20 @@ class DeliveryViewModel @Inject constructor(
 
     private val dao = db.dao
 
-    init{
+    init {
         resetDBAndNavList()
+        listenServer()
     }
-    private fun resetDBAndNavList(){
-        _deliveryState.update { it.copy(
-            navListPoint = NavListState(
-                listPointName = emptyList(),
-                lastIndex = 0
+
+    private fun resetDBAndNavList() {
+        _deliveryState.update {
+            it.copy(
+                navListPoint = NavListState(
+                    listPointName = emptyList(),
+                    lastIndex = 0
+                )
             )
-        ) }
+        }
         viewModelScope.launch {
             dao.clearQueue()
         }
@@ -103,6 +108,7 @@ class DeliveryViewModel @Inject constructor(
             }
 
             is QueueEvent.OnConfirm -> {
+                buttonEnable(event.buttonId, false)
                 navigateController(true)
             }
         }
@@ -130,7 +136,7 @@ class DeliveryViewModel @Inject constructor(
         fetchFromRemote: Boolean = false,
         rsId: Int
     ) {
-        Log.d(TAG, "getQueues")
+//        Log.d(TAG, "getQueues")
         viewModelScope.launch {
             repository
                 .getQueuesFlow(fetchFromRemote, rsId)
@@ -161,7 +167,7 @@ class DeliveryViewModel @Inject constructor(
 
     //select queue from local db to work
     private fun getQueueToWork() {
-        Log.d(TAG, "getQueueToWork")
+//        Log.d(TAG, "getQueueToWork")
         viewModelScope.launch {
             val queue: QueueEntity? = dao.searchQueueOne()
             if (queue != null) {
@@ -176,24 +182,22 @@ class DeliveryViewModel @Inject constructor(
                         )
                     )
                 }
-                if(queue.toQueue().STATUS_ID==1){
+                if (queue.toQueue().STATUS_ID == 1) {
                     navigateController(true)
-                }else{
+                } else {
                     navigateController(false)
                 }
-
             }
         }
     }
 
-    //check queue success(status_id=6) then sync to server and delete from local db
+    //check queue success(status_id=6,7) then sync to server and delete from local db
     private fun checkQueueOnServerAndSync() {
-        Log.d(TAG, "checkQueueOnServerAndSync")
+//        Log.d(TAG, "checkQueueOnServerAndSync")
         viewModelScope.launch {
             _deliveryState.update { it.copy(isLoading = true) }
             val queuesEntity = dao.searchQueueSuccess()
             if (queuesEntity.isEmpty()) return@launch
-
             val queues = queuesEntity.map { it.toQueue() }
             for (queue in queues) {
 
@@ -204,17 +208,16 @@ class DeliveryViewModel @Inject constructor(
 
                 when (val result = updateQueueResult.await()) {
                     is Resource.Success -> {
-                        Log.d(TAG, "Update queue to server success")
+//                        Log.d(TAG, "Update queue to server success")
                         _deliveryState.update { it.copy(isConnected = true) }
                         dao.clearQueueById(queue.QUEUE_ID)
                     }
 
                     is Resource.Error -> {
-                        Log.d(TAG, "Update queue to server failed")
+//                        Log.d(TAG, "Update queue to server failed")
                         _deliveryState.update { it.copy(isConnected = false) }
                         continue
                     }
-
                     else -> Unit
                 }
             }
@@ -223,30 +226,33 @@ class DeliveryViewModel @Inject constructor(
 
     //check queue in server and local if cancel in server then update in local
     private fun syncQueueById() {
-        Log.d(TAG, "syncQueueById")
+//        Log.d(TAG, "syncQueueById")
         viewModelScope.launch {
             _deliveryState.update { it.copy(isLoading = true) }
-            if(_deliveryState.value.queue!=null){
+            if (_deliveryState.value.queue != null) {
                 val queueByIdResult = async {
                     repository
                         .getQueueById(_deliveryState.value.queue!!.QUEUE_ID)
                 }
                 when (val result = queueByIdResult.await()) {
                     is Resource.Success -> {
-                        if (result.data!!.STATUS_ID == 8) {
-                            val localQueue = _deliveryState.value.queue
-                            localQueue!!.STATUS_ID = result.data.STATUS_ID
-                            _deliveryState.update {
-                                it.copy(
-                                    queue = localQueue,
-                                    isLoading = false,
-                                    isConnected = true
-                                )
+                        result.data?.let {
+                            if (result.data.STATUS_ID == 8) {
+                                val localQueue = _deliveryState.value.queue
+                                localQueue?.let {
+                                    localQueue.STATUS_ID = result.data.STATUS_ID
+                                    _deliveryState.update {
+                                        it.copy(
+                                            queue = localQueue
+                                        )
+                                    }
+                                    dao.updateQueue(localQueue.toQueueEntity())
+                                }
                             }
-                            dao.updateQueue(localQueue.toQueueEntity())
                         }
+
                         Log.d(TAG, "Sync queue success")
-                        _deliveryState.update { it.copy(isConnected = true) }
+                        _deliveryState.update { it.copy(isLoading = false, isConnected = true) }
                     }
 
                     is Resource.Error -> {
@@ -261,41 +267,51 @@ class DeliveryViewModel @Inject constructor(
         }
     }
 
+    //    private fun updateQueueState(queue: Queue){
+//        viewModelScope.launch {
+//            _deliveryState.update { it.copy(queue = queue) }
+//            dao.updateQueue(queue.toQueueEntity())
+//        }
+//    }
     //Update queue to server
     private fun updateQueue(queue: Queue) {
         viewModelScope.launch {
-            _deliveryState.update { it.copy(isLoading = true) }
+
+            _deliveryState.update { it.copy(queue = queue, isLoading = true) }
+            dao.updateQueue(queue.toQueueEntity())
+
             val updateQueueResult = async {
                 repository
                     .updateQueue(queue)
             }
             when (val result = updateQueueResult.await()) {
                 is Resource.Success -> {
-                    Log.d(TAG, "Update queue to server success")
+//                    Log.d(TAG, "Update queue to server success")
 //                    Log.d(TAG, "${result.data}")
-                    _deliveryState.update { it.copy(isConnected = true) }
+//                    _deliveryState.update { it.copy(isConnected = true) }
+                    _deliveryState.update { it.copy(isLoading = false, isConnected = true) }
                 }
 
                 is Resource.Error -> {
-                    Log.d(TAG, "Update queue to server failed")
-                    _deliveryState.update { it.copy(isConnected = false) }
+//                    Log.d(TAG, "Update queue to server failed")
+                    _deliveryState.update { it.copy(isLoading = false, isConnected = false) }
                 }
 
                 else -> Unit
             }
-            dao.updateQueue(queue.toQueueEntity())
-            _deliveryState.update { it.copy(queue = queue, isLoading = false) }
         }
     }
 
     // loop check queue in local
     fun checkQueueInCache() {
-        Log.d(TAG, "checkQueueInCache")
+//        Log.d(TAG, "checkQueueInCache")
         navigateJob = CoroutineScope(Dispatchers.Default).launch {
             while (isActive) {
                 onRosEvent(RosEvent.GetSpecialArea)
-                Log.d(TAG, "${dao.searchQueue()}")
-                Log.d(TAG, "Queue state: ${_deliveryState.value.queue}")
+//                Log.d(TAG, "${dao.searchQueue()}")
+//                Log.d(TAG, "Queue state: ${_deliveryState.value.queue}")
+                sendDataToServer("localQueue: ${dao.searchQueue()}")
+                sendDataToServer("RobotState: ${_deliveryState.value}")
                 if (_deliveryState.value.isNavigate) {
                     if (_deliveryState.value.queue != null) {
                         navigateController(false)
@@ -336,7 +352,7 @@ class DeliveryViewModel @Inject constructor(
     }
 
     private fun onFinishQueue() {
-        Log.d(TAG, "onFinish: ${_deliveryState.value.queue}")
+//        Log.d(TAG, "onFinish: ${_deliveryState.value.queue}")
         _deliveryState.update {
             it.copy(
                 queue = null,
@@ -347,13 +363,15 @@ class DeliveryViewModel @Inject constructor(
                 )
             )
         }
-        Log.d(TAG, "onFinish: ${_deliveryState.value.queue}")
+//        Log.d(TAG, "onFinish: ${_deliveryState.value.queue}")
     }
 
     private fun navigateController(nextStep: Boolean) {
-        if (!_deliveryState.value.isNavigate) return
-        syncQueueById()
+        if (!_deliveryState.value.isNavigate) {
+            return
+        }
         val queue = _deliveryState.value.queue ?: return
+        syncQueueById()
         val state: Int = queue.STATUS_ID
         val pickupPoint = queue.PICKUP_POINT_ID
         val destinationPoint = queue.DESTINATION_POINT_ID
@@ -384,28 +402,28 @@ class DeliveryViewModel @Inject constructor(
                     //If confirm then Update status waitPlace -> deliver
                     queue.STATUS_ID = 4
                     queue.DELIVER_TIME = getDateTimeStr()
-                    buttonEnable(pickupPoint, false)
+//                    buttonEnable(pickupPoint, false)
                     updateQueue(queue)
                 }
 
                 4 -> {
                     //Nav to destination point
                     queue.STATUS_ID = 5
-                    queue.WAIT_PLACE_TIME = getDateTimeStr()
+                    queue.WAIT_PICK_TIME = getDateTimeStr()
                     buttonEnable(destinationPoint, true)
                     updateQueue(queue)
                 }
 
                 5 -> {
                     //Update status deliver -> waitPick and Waiting confirm
-                    if(queue.JOB_TYPE_ID==4){
+                    if (queue.JOB_TYPE_ID == 4) {
                         queue.STATUS_ID = 7
                         queue.FINISH_TIME = getDateTimeStr()
-                    }else{
+                    } else {
                         queue.STATUS_ID = 6
                         queue.CHECKING_TIME = getDateTimeStr()
                     }
-                    buttonEnable(destinationPoint, false)
+//                    buttonEnable(destinationPoint, false)
                     updateQueue(queue)
 //                    onFinishQueue()
                 }
@@ -434,9 +452,11 @@ class DeliveryViewModel @Inject constructor(
                 5 -> {
                     //Update status deliver -> waitPick and Waiting confirm
                 }
+
                 6 -> {
                     onFinishQueue()
                 }
+
                 7 -> {
                     onFinishQueue()
                 }
@@ -445,7 +465,7 @@ class DeliveryViewModel @Inject constructor(
         updateTaskDetail(queue.toQueueDetail())
     }
 
-    private fun updateTaskDetail(newQueueDetail: QueueDetail){
+    private fun updateTaskDetail(newQueueDetail: QueueDetail) {
         _deliveryState.update { it.copy(queueDetail = newQueueDetail) }
     }
 
@@ -454,9 +474,9 @@ class DeliveryViewModel @Inject constructor(
             if (shouldSendCmdNav("charging_pile")) {
                 navToPointName("charging_pile")
             }
-        }else{
-            if(_deliveryState.value.coreData.chargingStatus!=2){
-                if (shouldSendCmdNav("charging_pile")){
+        } else {
+            if (_deliveryState.value.coreData.chargingStatus != 2) {
+                if (shouldSendCmdNav("charging_pile")) {
                     controller?.navigationByPoint("charging_pile")
                 }
             }
@@ -489,6 +509,17 @@ class DeliveryViewModel @Inject constructor(
             it.copy(navResult = navResult)
         }
 
+        if (navResult.state == 1) {
+            if (!_deliveryState.value.isPlayMusic) {
+                _deliveryState.update { it.copy(isPlayMusic = true) }
+            }
+        } else {
+            if (_deliveryState.value.isPlayMusic) {
+                _deliveryState.update { it.copy(isPlayMusic = false) }
+            }
+        }
+
+
         when (navResult.state) {
             0 -> {
                 //Initial state
@@ -498,6 +529,7 @@ class DeliveryViewModel @Inject constructor(
             1 -> {
                 // Starts to navigate
                 showRobotStatus("Navigating to ${navResult.name}, distToGoal: ${navResult.distToGoal}, mileage: ${navResult.mileage}")
+
             }
 
             2 -> {
@@ -602,7 +634,6 @@ class DeliveryViewModel @Inject constructor(
                     }
                 }
             }
-
         }
     }
 
@@ -616,28 +647,45 @@ class DeliveryViewModel @Inject constructor(
             chargingStatus = parseCoreData[4].toInt()
         )
         if (newCoreData != _deliveryState.value.coreData) {
-            if(newCoreData.chargingStatus==2 && _deliveryState.value.coreData.chargingStatus != 2){
+            if (newCoreData.chargingStatus == 2 && _deliveryState.value.coreData.chargingStatus != 2) {
                 controller?.relocByName("charging_pile")
             }
             _deliveryState.update { it.copy(coreData = newCoreData) }
+            sendDataToServer(data)
         }
     }
 
     private fun onNavSuccess(pointName: String) {
-        Log.d(TAG, "OnNavSuccess")
-        Log.d(TAG, "${_deliveryState.value.navListPoint.listPointName}, ${_deliveryState.value.navListPoint.lastIndex}")
+//        Log.d(TAG, "OnNavSuccess")
+//        Log.d(TAG, "${_deliveryState.value.navListPoint.listPointName}, ${_deliveryState.value.navListPoint.lastIndex}")
         if (_deliveryState.value.navListPoint.listPointName.isEmpty() && _deliveryState.value.navListPoint.lastIndex == 0) {
-            navigateController(true)
+            val statusId = _deliveryState.value.queue?.STATUS_ID
+            statusId?.let {
+                when (statusId) {
+                    2 -> {
+                        val pickupId = _deliveryState.value.queue?.PICKUP_POINT_ID
+                        pickupId?.let {
+                            if (pointIdToPointName(pickupId) == pointName)
+                                navigateController(true)
+                        }
+                    }
+
+                    4 -> {
+                        val desId = _deliveryState.value.queue?.DESTINATION_POINT_ID
+                        desId?.let {
+                            if (pointIdToPointName(desId) == pointName)
+                                navigateController(true)
+                        }
+                    }
+
+                    else -> {
+                        navigateController(false)
+                    }
+                }
+            }
         } else {
             if (_deliveryState.value.navListPoint.lastIndex == _deliveryState.value.navListPoint.listPointName.size - 1) {
-                _deliveryState.update {
-                    it.copy(
-                        navListPoint = NavListState(
-                            listPointName = emptyList(),
-                            lastIndex = 0
-                        )
-                    )
-                }
+                resetNavList()
                 navigateController(true)
             } else {
                 if (_deliveryState.value.navListPoint.listPointName[_deliveryState.value.navListPoint.lastIndex] == pointName) {
@@ -655,18 +703,32 @@ class DeliveryViewModel @Inject constructor(
         }
     }
 
+    private fun resetNavList() {
+        _deliveryState.update {
+            it.copy(
+                navListPoint = NavListState(
+                    listPointName = emptyList(),
+                    lastIndex = 0
+                )
+            )
+        }
+    }
+
     private fun navToPointName(pointName: String) {
+        Log.d(TAG, "isNavListEmpty: ${_deliveryState.value.navListPoint.listPointName.isEmpty()}")
+        Log.d(TAG, "lastIndex: ${_deliveryState.value.navListPoint.lastIndex}")
         val specialArea = _deliveryState.value.specialArea
-        Log.d(TAG, "navToPoint: area=${specialArea.name}")
+//        Log.d(TAG, "navToPoint: area=${specialArea.name}")
         if (pointName == "Lab") {
             if (specialArea.name == "Lab") {
+                resetNavList()
                 if (shouldSendCmdNav(pointName)) {
                     controller?.navigationByPoint(pointName)
                 }
             } else {
-                if(_deliveryState.value.navListPoint.listPointName.isEmpty()){
+                if (_deliveryState.value.navListPoint.listPointName.isEmpty()) {
                     navToListPoint(listOf("FrontDoorLab", pointName))
-                }else{
+                } else {
                     val currentPointName =
                         _deliveryState.value.navListPoint.listPointName[_deliveryState.value.navListPoint.lastIndex]
                     if (shouldSendCmdNav(currentPointName)) {
@@ -677,16 +739,17 @@ class DeliveryViewModel @Inject constructor(
 
         } else {
             if (specialArea.name == "Lab") {
-                if(_deliveryState.value.navListPoint.listPointName.isEmpty()){
-                    navToListPoint(listOf("BackDoorLab", pointName))
-                }else{
+                if (_deliveryState.value.navListPoint.listPointName.isEmpty()) {
+                    navToListPoint(listOf("BackDoorLab", "OutLab", pointName))
+                } else {
                     val currentPointName =
                         _deliveryState.value.navListPoint.listPointName[_deliveryState.value.navListPoint.lastIndex]
                     if (shouldSendCmdNav(currentPointName)) {
-                        navToListPoint(listOf("BackDoorLab", pointName))
+                        navToListPoint(listOf("BackDoorLab", "OutLab", pointName))
                     }
                 }
             } else {
+                resetNavList()
                 if (shouldSendCmdNav(pointName)) {
                     controller?.navigationByPoint(pointName)
                 }
@@ -826,31 +889,45 @@ class DeliveryViewModel @Inject constructor(
 
             if (result.startsWith("nav_result")) {
                 onNavResult(result)
-            } else if (result.startsWith("sys:boot")) {
-
-            } else if (result.startsWith("core_data")) {
+                sendDataToServer(result)
+            }
+//            else if (result.startsWith("sys:boot")) {
+//
+//            }
+            else if (result.startsWith("core_data")) {
                 onCoreData(result)
-            } else if (result.startsWith("move_status")) {
-
-            } else if (result.startsWith("base_vel")) {
-
-            } else if (result.startsWith("nav:pose")) {
-
-            } else if (result.startsWith("in_polygon")) {
+            }
+//            else if (result.startsWith("move_status")) {
+//
+//            }
+//            else if (result.startsWith("base_vel")) {
+//
+//            }
+//            else if (result.startsWith("nav:pose")) {
+//
+//            }
+            else if (result.startsWith("in_polygon")) {
                 onSpecialArea(result)
-            } else if (result.startsWith("answer_nearest")) {
-
-            } else {
-                Log.i(TAG, "ROS Other: $result")
+                sendDataToServer(result)
+            }
+//            else if (result.startsWith("answer_nearest")) {
+//
+//            }
+            else {
+//                Log.i(TAG, "ROS Other: $result")
+                sendDataToServer(result)
             }
         }
     }
 
     private fun onSpecialArea(data: String) {
+//        Log.d(TAG, data)
         val parseSpecialArea = data
             .replace("in_polygon:", "")
             .split(",")
-        if (parseSpecialArea.isNotEmpty()) {
+//        Log.d(TAG, "${parseSpecialArea}, ${parseSpecialArea.size}")
+        if (parseSpecialArea.size != 1) {
+//            Log.d(TAG, "!=0")
             val tempSpecialArea = SpecialArea(
                 name = parseSpecialArea[0],
                 type = parseSpecialArea[1].toInt(),
@@ -862,6 +939,7 @@ class DeliveryViewModel @Inject constructor(
                 )
             }
         } else {
+//            Log.d(TAG, "==0")
             val tempSpecialArea = SpecialArea(
                 name = "",
                 type = 0,
@@ -877,7 +955,7 @@ class DeliveryViewModel @Inject constructor(
 
     private fun heartBeats() {
         controller?.heartBeat()
-        Log.i(TAG, "HeartBeat")
+//        Log.i(TAG, "HeartBeat")
     }
 
     fun initController(context: Context) {
@@ -906,8 +984,26 @@ class DeliveryViewModel @Inject constructor(
     private fun listenServer() {
         viewModelScope.launch {
             socketRepository.connect()
-            socketRepository.listenForEvent("message") { args ->
-                _deliveryState.update { it.copy(message = "${args[0]}") }
+            socketRepository.listenForEvent("cmd") { args ->
+                val data = args[0].toString()
+                if (data.startsWith("ros:")) {
+                    val cmd = data.replace("ros:", "")
+                    controller?.sendCommand(cmd)
+                } else if (data.startsWith("localDB:")) {
+                    val cmd = data.replace("localDB:", "")
+                    if (cmd.startsWith("getQueueAll")) {
+                        viewModelScope.launch {
+                            socketRepository.emitEvent("report", dao.searchQueue())
+                        }
+                    } else if (cmd.startsWith("delete")) {
+                        val id = cmd.replace("delete[", "")
+                            .replace("]", "").toInt()
+                        viewModelScope.launch {
+                            dao.clearQueueById(id)
+                        }
+                    }
+                }
+
             }
         }
     }
@@ -917,4 +1013,15 @@ class DeliveryViewModel @Inject constructor(
             socketRepository.disconnect()
         }
     }
+
+    private fun sendDataToServer(data: String) {
+        viewModelScope.launch {
+            socketRepository.emitEvent("report", data)
+        }
+    }
+
+    //Music
+//    private fun addMediaItem(){
+//        player.addMediaItem(MediaItem.fromUri(Uri.parse("android.resource://raw/${R.raw.crazy}")))
+//    }
 }

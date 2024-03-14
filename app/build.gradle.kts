@@ -16,8 +16,8 @@ android {
         minSdk = 22
         //noinspection EditedTargetSdkVersion,ExpiredTargetSdkVersion
         targetSdk = 26
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -96,6 +96,11 @@ dependencies {
 
     //Reeman SDK
     implementation(files("libs/Reeman-ROS-1.0-202304150921.aar"))
+
+    //Exoplayer
+    implementation("androidx.media3:media3-exoplayer:1.2.1")
+    implementation("androidx.media3:media3-ui:1.2.1")
+    implementation("androidx.media3:media3-common:1.2.1")
 }
 
 kapt {

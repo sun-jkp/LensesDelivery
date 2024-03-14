@@ -1,5 +1,6 @@
 package com.transition.lensesdelivery.presentation.delivery_confirm
 
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -18,18 +20,30 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
+import com.transition.lensesdelivery.R
 import kotlinx.coroutines.delay
 
 const val TAG = "TEST"
 
 @Composable
 fun DeliveryScreen(
+    player: ExoPlayer,
     viewModel: DeliveryViewModel = hiltViewModel()
 ) {
     val deliveryState by viewModel.deliveryState.collectAsState()
     val context = LocalContext.current
-
+    player.prepare()
+    player.repeatMode = Player.REPEAT_MODE_ALL
     LaunchedEffect(Unit) {
+        val musicId = R.raw.corporate_tech
+        val path = "android.resource://raw/$musicId"
+        val mediaItem = MediaItem.fromUri(Uri.parse(path))
+
+        player.addMediaItem(mediaItem)
+//        player.play()
         viewModel.initController(context)
         delay(200)
         if(deliveryState.isRosConnected){
@@ -39,9 +53,22 @@ fun DeliveryScreen(
 
         while (true) {
 //            if(deliveryState.isRosConnected) viewModel.onRosEvent(RosEvent.HeartBeats)
-            Log.d("TEST","${deliveryState.isNavigate}")
+//            Log.d("TEST","${deliveryState.isNavigate}")
             delay(5000L)
         }
+    }
+
+    DisposableEffect(key1 = Unit) {
+        onDispose {
+            player.release()
+        }
+    }
+
+//    Log.d(TAG, "isPlayMusic = ${deliveryState.isPlayMusic}")
+    if(deliveryState.isPlayMusic){
+        player.play()
+    }else{
+        player.stop()
     }
 
     Column(
@@ -118,5 +145,5 @@ fun ButtonLayout(buttonEnable: List<Boolean>, onClick: (buttonId: Int) -> Unit) 
 @Preview(showBackground = true)
 @Composable
 fun Screen() {
-    DeliveryScreen()
+//    DeliveryScreen()
 }

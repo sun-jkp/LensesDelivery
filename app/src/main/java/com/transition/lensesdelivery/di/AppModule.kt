@@ -17,7 +17,7 @@ import retrofit2.create
 import javax.inject.Singleton
 
 @Module
-@InstallIn(SingletonComponent::class)
+@InstallIn(SingletonComponent::class )
 object AppModule {
 
     @Provides
@@ -47,4 +47,10 @@ object AppModule {
         return IO.socket(SOCKET_IO_URL)
     }
 
+//    @Provides
+//    @Singleton
+//    fun provideVideoPlayer(app: Application): Player {
+//        return ExoPlayer.Builder(app)
+//            .build()
+//    }
 }

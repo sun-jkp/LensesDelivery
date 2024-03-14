@@ -65,7 +65,7 @@ interface QueueDao {
         """
             SELECT *
             FROM RSQueue
-            WHERE STATUS_ID=6
+            WHERE STATUS_ID>=6 AND STATUS_ID<=7
         """
     )
     suspend fun searchQueueSuccess(): List<QueueEntity>
