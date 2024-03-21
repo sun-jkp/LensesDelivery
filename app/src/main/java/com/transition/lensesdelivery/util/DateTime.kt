@@ -5,7 +5,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-private const val DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.sss'Z'"
+private const val DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'"
 fun getDateTime(): Date? {
     val dateFormat = SimpleDateFormat(DATE_FORMAT, Locale.getDefault())
     val formattedDateTime = dateFormat.format(Calendar.getInstance().time)
