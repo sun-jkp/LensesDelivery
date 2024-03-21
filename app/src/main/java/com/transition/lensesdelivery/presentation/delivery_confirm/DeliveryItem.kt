@@ -140,10 +140,10 @@ fun RobotStatus(isConnected: Boolean, isRosConnected: Boolean, massage: String) 
             modifier = Modifier
                 .width(10.dp)
         )
-        val RobotStatusBackgroundColor =
+        val robotStatusBackgroundColor =
             if (isRosConnected) Color(0xFF7ADDFF) else Color(0xFFFF4832)
         Card(
-            colors = CardDefaults.cardColors(RobotStatusBackgroundColor),
+            colors = CardDefaults.cardColors(robotStatusBackgroundColor),
             modifier = Modifier
                 .height(35.dp)
         ) {
