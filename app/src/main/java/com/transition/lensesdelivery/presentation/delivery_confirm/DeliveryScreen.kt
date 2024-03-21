@@ -1,7 +1,6 @@
 package com.transition.lensesdelivery.presentation.delivery_confirm
 
 import android.net.Uri
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,6 +23,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.transition.lensesdelivery.R
+import com.transition.lensesdelivery.data.mapper.toQueueDetail
 import kotlinx.coroutines.delay
 
 const val TAG = "TEST"
@@ -88,7 +88,7 @@ fun DeliveryScreen(
                 massage = deliveryState.robotMsg
             )
         }
-        QueueDetailLayout(queueDetail = deliveryState.queueDetail)
+        QueueDetailLayout(queueDetail = deliveryState.queue?.toQueueDetail())
 
         Spacer(modifier = Modifier.height(5.dp))
 
