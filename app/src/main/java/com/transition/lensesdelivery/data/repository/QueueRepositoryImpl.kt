@@ -1,8 +1,5 @@
 package com.transition.lensesdelivery.data.repository
 
-import android.net.http.HttpException
-import android.os.Build
-import androidx.annotation.RequiresExtension
 import com.transition.lensesdelivery.data.local.QueueDatabase
 import com.transition.lensesdelivery.data.mapper.toQueue
 import com.transition.lensesdelivery.data.mapper.toQueueEntity
@@ -25,7 +22,6 @@ class QueueRepositoryImpl @Inject constructor(
 
     private val dao = db.dao
 
-    @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     override suspend fun getQueuesFlow(
         fetchFromRemote: Boolean,
         rsId: Int
@@ -51,7 +47,7 @@ class QueueRepositoryImpl @Inject constructor(
                 e.printStackTrace()
                 emit(Resource.Error("Couldn't load data"))
                 null
-            } catch (e: HttpException) {
+            } catch (e: Exception) {
                 e.printStackTrace()
                 emit(Resource.Error("Couldn't load data"))
                 null
@@ -81,7 +77,6 @@ class QueueRepositoryImpl @Inject constructor(
         }
     }
 
-    @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     override suspend fun updateQueue(queue: Queue): Resource<UpdateResponse> {
         return try {
             val result = api.updateQueue(queue)
@@ -99,7 +94,6 @@ class QueueRepositoryImpl @Inject constructor(
         }
     }
 
-    @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     override suspend fun getQueueById(queueId: Int): Resource<Queue> {
         return try {
             val result = api.getQueueById(queueId)
