@@ -1,5 +1,6 @@
 package com.transition.lensesdelivery.presentation.delivery_confirm
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,11 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,6 +37,11 @@ import com.transition.lensesdelivery.ui.theme.sourceCodeProFontFamily
 
 @Composable
 fun LineButton(label: String = "", isEnable: Boolean = false, onClick: () -> Unit) {
+    var btnCnt by remember { mutableIntStateOf(0) }
+    if(!isEnable && btnCnt!=0){
+        Log.d("Btn", "$label set btn to 0")
+        btnCnt = 0
+    }
     FilledTonalButton(
         modifier = Modifier
             .width(130.dp)
@@ -40,7 +51,15 @@ fun LineButton(label: String = "", isEnable: Boolean = false, onClick: () -> Uni
             Color(0xFF4EDFFF)
         ),
         shape = RoundedCornerShape(20.dp),
-        onClick = { onClick() }) {
+
+        onClick = {
+            Log.d("Btn", "${label}: cnt=$btnCnt")
+            if(btnCnt==0){
+                Log.d("Btn", "${label} onCLick()")
+                btnCnt+=1
+                onClick()
+            }
+        }) {
         Text(
             text = label,
             color = Color.White,
@@ -53,6 +72,11 @@ fun LineButton(label: String = "", isEnable: Boolean = false, onClick: () -> Uni
 
 @Composable
 fun LabButton(isEnable: Boolean = false, onClick: () -> Unit) {
+    var btnCnt by remember { mutableIntStateOf(0) }
+    if(!isEnable && btnCnt!=0){
+        Log.d("Btn", "Lab set btn to 0")
+        btnCnt = 0
+    }
     FilledTonalButton(
         modifier = Modifier
             .width(360.dp)
@@ -62,7 +86,13 @@ fun LabButton(isEnable: Boolean = false, onClick: () -> Unit) {
             Color(0xFF35F68E)
         ),
         shape = RoundedCornerShape(20.dp),
-        onClick = { onClick() }) {
+        onClick = {
+            Log.d("Btn", "Lab: cnt=$btnCnt")
+            if(btnCnt==0){
+                Log.d("Btn", "Lab onClick")
+                btnCnt+=1
+                onClick()
+            } }) {
         Text(
             text = "Laboratory",
             color = Color.White,
