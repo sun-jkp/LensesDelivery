@@ -1,8 +1,10 @@
 package com.transition.lensesdelivery.data.repository
 
 import com.transition.lensesdelivery.data.local.QueueDatabase
+import com.transition.lensesdelivery.data.local.QueueEntity
 import com.transition.lensesdelivery.data.mapper.toQueue
 import com.transition.lensesdelivery.data.mapper.toQueueEntity
+import com.transition.lensesdelivery.data.remote.Dto.QueueDto
 import com.transition.lensesdelivery.data.remote.QueueApi
 import com.transition.lensesdelivery.domain.model.Queue
 import com.transition.lensesdelivery.domain.model.UpdateResponse
@@ -63,13 +65,24 @@ class QueueRepositoryImpl @Inject constructor(
 
             remoteListings?.let { listings ->
 //                dao.clearQueue()
-                dao.insertQueues(
-                    listings.map { it.toQueueEntity() }
-                )
+                val listQueue : MutableList<QueueDto> = mutableListOf()
+                for(queue in listings){
+                    val localData: QueueEntity? = dao.searchQueueById(queue.QUEUE_ID)
+                    if(localData == null) {
+                        listQueue.add(queue)
+                    }else{
+                        continue
+                    }
+                }
+                if(listQueue.isNotEmpty()){
+                    dao.insertQueues(
+                        listQueue.map { it.toQueueEntity() }
+                    )
+                }
                 emit(
                     Resource.Success(
                         data = dao
-                            .searchQueue()
+                            .searchQueueNotSuccess()
                             .map { it.toQueue() })
                 )
                 emit(Resource.Loading(false))

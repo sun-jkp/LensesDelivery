@@ -59,7 +59,7 @@ interface QueueDao {
             WHERE QUEUE_ID=:queueId
         """
     )
-    suspend fun searchQueueById(queueId: Int): QueueEntity
+    suspend fun searchQueueById(queueId: Int): QueueEntity?
 
     @Query(
         """

@@ -253,6 +253,19 @@ class DeliveryViewModel @Inject constructor(
                                     dao.updateQueue(localQueue.toQueueEntity())
                                 }
                             }
+
+                            if(result.data.STATUS_ID == 7){
+                                val localQueue = _deliveryState.value.queue
+                                localQueue?.let {
+                                    if(it.STATUS_ID < 7){
+                                        localQueue.STATUS_ID = result.data.STATUS_ID
+                                        Logger.log("[syncQueueById] Queue status in server equal 7 (success)")
+                                        updateQueueState(localQueue)
+                                        Logger.log("[syncQueueById] Update queue in local DB")
+                                        dao.updateQueue(localQueue.toQueueEntity())
+                                    }
+                                }
+                            }
                         }
 
 //                        Log.d(TAG, "Sync queue success")
@@ -331,6 +344,7 @@ class DeliveryViewModel @Inject constructor(
                     onIdle()
                     getQueues(fetchFromRemote = true, rsId = rsId)
                 }
+                delay(2000L)
                 checkQueueOnServerAndSync()
                 delay(3000L)
             }
@@ -355,14 +369,13 @@ class DeliveryViewModel @Inject constructor(
             Logger.log("[navigateController] isNavigate = false, return")
             return
         }
+        syncQueueById()
         val queue = _deliveryState.value.queue
         if(queue==null){
             Logger.log("[navigateController] queue = null, return")
             return
         }
 
-//        Log.d(ROS_TAG, "[navigateController]: $queue")
-        syncQueueById()
         val state: Int = queue.STATUS_ID
         val pickupPoint = queue.PICKUP_POINT_ID
         val destinationPoint = queue.DESTINATION_POINT_ID
