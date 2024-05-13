@@ -1,5 +1,6 @@
 package com.transition.lensesdelivery.presentation.delivery_confirm
 
+import android.app.Activity
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,11 +14,17 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -35,6 +42,12 @@ fun DeliveryScreen(
 ) {
     val deliveryState by viewModel.deliveryState.collectAsState()
     val context = LocalContext.current
+    val view = LocalView.current
+    val window = (view.context as Activity).window
+    val insetsController = WindowCompat.getInsetsController(window, view)
+    val showSystemUi by remember {
+        mutableStateOf(false)
+    }
     player.prepare()
     player.repeatMode = Player.REPEAT_MODE_ALL
     LaunchedEffect(Unit) {
@@ -61,6 +74,19 @@ fun DeliveryScreen(
     DisposableEffect(key1 = Unit) {
         onDispose {
             player.release()
+        }
+    }
+
+    //Hide the status bars
+
+    if(!view.isInEditMode){
+        if(!showSystemUi){
+            insetsController.apply {
+                hide(WindowInsetsCompat.Type.systemBars())
+                systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        }else{
+            insetsController.apply { show(WindowInsetsCompat.Type.systemBars()) }
         }
     }
 
