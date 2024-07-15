@@ -19,4 +19,19 @@ interface QueueRepository {
     suspend fun getQueueById(
         queueId: Int
     ): Resource<Queue>
+
+    suspend fun getQueuesByPointId(
+        rsId: Int,
+        pointId: Int
+    ): Flow<Resource<List<Queue>>>
+
+    suspend fun getQueuesByJobId(
+        rsId: Int,
+        jobId: Int
+    ): Flow<Resource<List<Queue>>>
+
+    suspend fun getCompatibleQueues(
+        rsId: Int,
+        queueId: Int
+    ): Flow<Resource<List<Queue>>>
 }

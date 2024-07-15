@@ -1,5 +1,6 @@
 package com.transition.lensesdelivery.data.local
 
+import android.util.Log
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -7,6 +8,7 @@ import androidx.room.TypeConverter
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 @Entity(tableName = "RSQueue")
 data class QueueEntity(
@@ -30,27 +32,47 @@ data class QueueEntity(
     @ColumnInfo(name = "REMARK") val remark: String? = null
 )
 
-//@ColumnInfo(name = "CALL_TIME")  val callTime: LocalDateTime? = null,
-//@ColumnInfo(name = "PICKUP_TIME")  val pickupTime: LocalDateTime? = null,
-//@ColumnInfo(name = "WAIT_PLACE_TIME")  val waitPlaceTime: LocalDateTime? = null,
-//@ColumnInfo(name = "DELIVER_TIME")  val deliverTime: LocalDateTime? = null,
-//@ColumnInfo(name = "WAIT_PICK_TIME")  val waitPickTime: LocalDateTime? = null,
-//@ColumnInfo(name = "CHECKING_TIME")  val checkingTime: LocalDateTime? = null,
-//@ColumnInfo(name = "FINISH_TIME")  val finishTime: LocalDateTime? = null,
+
 class LocalDateTimeConverter {
-    private val DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+//    private val DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+    private val dateFormats = arrayOf(
+        "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+        "yyyy-MM-dd'T'HH:mm:ss'Z'"
+    )
+    private val regexPatterns = arrayOf(
+        Regex("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z\$"),
+        Regex("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z\$")
+    )
 
     @TypeConverter
     fun timeToString(time: Date?): String? {
-        val dateFormat = SimpleDateFormat(DATE_FORMAT, Locale.getDefault())
-        return time?.let { dateFormat.format(it) }
+        Log.d("TEST", "TTS: Date is $time")
+        val dateFormat = SimpleDateFormat(dateFormats[0], Locale.getDefault())
+//        dateFormat.timeZone = TimeZone.getTimeZone("Asia/Bangkok")
+        val timeResult :String? = time?.let { dateFormat.format(it) }
+        Log.d("TEST", "TTS String is $timeResult")
+        return timeResult
     }
 
     @TypeConverter
     fun stringToTime(string: String?): Date? {
-        val dateFormat = SimpleDateFormat(DATE_FORMAT, Locale.getDefault())
+
         var parsedDate: Date? = null
-        parsedDate = string?.let { dateFormat.parse(it) }
-        return parsedDate
+        Log.d("TEST", "STT: Date string is $string")
+        if(string==null){
+            return null
+        }
+
+        for((cnt, pattern) in regexPatterns.withIndex()){
+            if(pattern.matches(string)){
+                Log.d("TEST", "Trying ${dateFormats[cnt]} format.")
+                val dateFormat = SimpleDateFormat(dateFormats[cnt], Locale.getDefault())
+                Log.d("TEST", "STT: Date dateFormat is $dateFormat")
+                parsedDate = dateFormat.parse(string)
+                Log.d("TEST", "STT: Date is $parsedDate")
+                return parsedDate
+            }
+        }
+        return null
     }
 }

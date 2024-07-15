@@ -124,4 +124,126 @@ class QueueRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getQueuesByPointId(rsId: Int, pointId: Int): Flow<Resource<List<Queue>>> {
+        return flow{
+            val remoteListings = try {
+                val response = api.getQueuesByPointId(rsId, pointId)
+                response
+            } catch (e: IOException) {
+                e.printStackTrace()
+                emit(Resource.Error("Couldn't load data"))
+                null
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emit(Resource.Error("Couldn't load data"))
+                null
+            }
+
+            remoteListings?.let { listings ->
+                val listQueue : MutableList<QueueDto> = mutableListOf()
+                for(queue in listings){
+                    val localData: QueueEntity? = dao.searchQueueById(queue.QUEUE_ID)
+                    if(localData == null) {
+                        listQueue.add(queue)
+                    }else{
+                        continue
+                    }
+                }
+                if(listQueue.isNotEmpty()){
+                    dao.insertQueues(
+                        listQueue.map { it.toQueueEntity() }
+                    )
+                }
+                emit(
+                    Resource.Success(
+                        data = dao
+                            .searchQueueNotSuccess()
+                            .map { it.toQueue() })
+                )
+                emit(Resource.Loading(false))
+            }
+        }
+    }
+
+    override suspend fun getQueuesByJobId(rsId: Int, jobId: Int): Flow<Resource<List<Queue>>> {
+        return flow{
+            val remoteListings = try {
+                val response = api.getQueuesByJobId(rsId, jobId)
+                response
+            } catch (e: IOException) {
+                e.printStackTrace()
+                emit(Resource.Error("Couldn't load data"))
+                null
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emit(Resource.Error("Couldn't load data"))
+                null
+            }
+
+            remoteListings?.let { listings ->
+                val listQueue : MutableList<QueueDto> = mutableListOf()
+                for(queue in listings){
+                    val localData: QueueEntity? = dao.searchQueueById(queue.QUEUE_ID)
+                    if(localData == null) {
+                        listQueue.add(queue)
+                    }else{
+                        continue
+                    }
+                }
+                if(listQueue.isNotEmpty()){
+                    dao.insertQueues(
+                        listQueue.map { it.toQueueEntity() }
+                    )
+                }
+                emit(
+                    Resource.Success(
+                        data = dao
+                            .searchQueueNotSuccess()
+                            .map { it.toQueue() })
+                )
+                emit(Resource.Loading(false))
+            }
+        }
+    }
+
+    override suspend fun getCompatibleQueues(rsId: Int, queueId: Int): Flow<Resource<List<Queue>>> {
+        return flow{
+            val remoteListings = try {
+                val response = api.getCompatibleQueues(rsId, queueId)
+                response
+            } catch (e: IOException) {
+                e.printStackTrace()
+                emit(Resource.Error("Couldn't load data"))
+                null
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emit(Resource.Error("Couldn't load data"))
+                null
+            }
+
+            remoteListings?.let { listings ->
+                val listQueue : MutableList<QueueDto> = mutableListOf()
+                for(queue in listings){
+                    val localData: QueueEntity? = dao.searchQueueById(queue.QUEUE_ID)
+                    if(localData == null) {
+                        listQueue.add(queue)
+                    }else{
+                        continue
+                    }
+                }
+                if(listQueue.isNotEmpty()){
+                    dao.insertQueues(
+                        listQueue.map { it.toQueueEntity() }
+                    )
+                }
+                emit(
+                    Resource.Success(
+                        data = dao
+                            .searchQueueNotSuccess()
+                            .map { it.toQueue() })
+                )
+                emit(Resource.Loading(false))
+            }
+        }
+    }
 }

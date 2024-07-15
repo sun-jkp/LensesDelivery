@@ -1,7 +1,6 @@
 package com.transition.lensesdelivery.presentation.delivery_confirm
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.reeman.ros.controller.RobotActionController
@@ -36,8 +35,7 @@ const val ROS_TAG = "ROS"
 class DeliveryViewModel @Inject constructor(
     private val repository: QueueRepository,
     private val socketRepository: SocketRepository,
-    private val db: QueueDatabase,
-//    val player: Player
+    private val db: QueueDatabase
 ) : ViewModel(), RosCallBackListener {
 
     private val _deliveryState = MutableStateFlow(DeliveryState())
@@ -182,6 +180,16 @@ class DeliveryViewModel @Inject constructor(
             }else{
                 Logger.log("[getQueueToWork] Find Queue LocalD: null")
             }
+        }
+    }
+
+    private fun getQueueTogether() {
+//        Log.d(TAG, "getQueueToWork")
+        Logger.log("[getQueueTogether] Function")
+        viewModelScope.launch {
+            val queue = deliveryState.value.queue
+            if(queue == null) return@launch
+
         }
     }
 
@@ -351,7 +359,7 @@ class DeliveryViewModel @Inject constructor(
         }
     }
     private fun cancelQueue(queueId: Int) {
-        Logger.log("[cancelQueue] Cancel Queue ID: ${queueId}")
+        Logger.log("[cancelQueue] Cancel Queue ID: $queueId")
         viewModelScope.launch {
             dao.clearQueueById(queueId)
             updateQueueState(null)
